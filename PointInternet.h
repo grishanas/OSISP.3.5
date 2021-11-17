@@ -15,6 +15,7 @@
 #define UDPListener_PORT 4343
 #define UDPSender_PORT 4344
 #define TCP_PORT 4345
+#define TCPListenPort 4346
 
 typedef struct _spis{
 	struct _spis* NextElement;
@@ -33,6 +34,7 @@ typedef struct _PointInternet
 	SOCKET UDPListenerSocket;
 	HWND hwnd;
 	PQueue Queue;
+	char* PlayerName;
 
 }*PPointInternet, PointInternet;
 

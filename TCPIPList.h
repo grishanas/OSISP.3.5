@@ -2,9 +2,9 @@
 #include <Windows.h>
 
 
-
 typedef struct _TCPconnect {
 	struct _TCPconnect* NextIP;
+	char* PlayerName;
 	HANDLE TCPThread;
 	SOCKET TCPSocket;
 	struct sockaddr *TCPSockAdrr;
@@ -16,6 +16,5 @@ typedef struct __List {
 } *PTCPList,_TCPList;
 
 int AddNewIP(PTCPList, PTCTConnect);
-int RemoveIP(PTCPList, PTCTConnect);
 PTCTConnect RemoveIP(PTCPList Connect, PTCTConnect ConnectSock);
 PTCPList CreateList();

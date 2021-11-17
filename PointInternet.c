@@ -13,6 +13,10 @@
 //
 
 
+// для подключения используется следующее соглашение вызова. При создании порта прослушки
+//
+//
+
 DWORD WINAPI InternetSendMessage(PTCTConnect TCPConnection,char *DGram,int size)
 {
 	int size = sizeof(struct sockaddr_in);
@@ -24,7 +28,34 @@ DWORD WINAPI InternetSendMessage(PTCTConnect TCPConnection,char *DGram,int size)
 	
 }
 
+// тут прием TCP сообщений от любых IP
+DWORD WINAPI NormTCPListener(PPointInternet internet) 
+{
+	WSADATA wsa;
+	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+	{
+		return;
+	}
+	SOCKET ServerSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	struct sockaddr_in NewUser;
+	NewUser.sin_addr.s_addr = INADDR_ANY;
+	NewUser.sin_port = htons(TCPListenPort);
+	NewUser.sin_family = AF_INET;
+	if (bind(ServerSocket, (struct sockaddr*)&NewUser, sizeof(NewUser)) == SOCKET_ERROR)
+	{
+		return;
+	}
+	char buffer[256];
+	int size = sizeof(NewUser);
+	while (1)
+	{
 
+	}
+
+
+}
+
+// тут потоковая передача данных между двумя пользователями
 DWORD WINAPI TCPListener(PTCTConnect TCPConnection)
 {
 	WSADATA wsa;
@@ -33,14 +64,12 @@ DWORD WINAPI TCPListener(PTCTConnect TCPConnection)
 		return;
 	}
 
-	if ((TCPConnection->TCPSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_TCP)) == INVALID_SOCKET)
+	if ((TCPConnection->TCPSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == INVALID_SOCKET)
 	{
 		return;
 	}
-	struct sockaddr_in server;
-	server.sin_addr.s_addr = INADDR_ANY;
-	server.sin_port = htons(TCP_PORT);
-	server.sin_family = AF_INET;
+	struct sockaddr server;
+	server = *TCPConnection->TCPSockAdrr;
 	if (bind(TCPConnection->TCPSocket, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
 	{
 		return;
@@ -65,6 +94,7 @@ DWORD WINAPI TCPListener(PTCTConnect TCPConnection)
 
 }
 
+// тут прием только udp сообщений
 DWORD WINAPI UDPListenerFunction(PPointInternet Internet)
 {
 	// это потоко безопасно
