@@ -22,12 +22,6 @@ typedef struct _spis{
 	int Lenght;
 } *PMessage,spis;
 
-/*typedef struct _TCPClient {
-	// надо прикрутить еще средства синхронизации
-	HANDLE TCPThread; 
-	SOCKET TCPSocket;
-	struct _TCPClient* NextClient; 
-}*PTCPClient,TCPClient;*/
 
 typedef struct _PointInternet
 {
