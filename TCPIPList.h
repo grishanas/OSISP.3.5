@@ -7,6 +7,7 @@ typedef struct _TCPconnect {
 	struct _TCPconnect* NextIP;
 	HANDLE TCPThread;
 	SOCKET TCPSocket;
+	struct sockaddr *TCPSockAdrr;
 } *PTCTConnect,TCPConnect;
 
 typedef struct __List {
@@ -16,4 +17,5 @@ typedef struct __List {
 
 int AddNewIP(PTCPList, PTCTConnect);
 int RemoveIP(PTCPList, PTCTConnect);
+PTCTConnect RemoveIP(PTCPList Connect, PTCTConnect ConnectSock);
 PTCPList CreateList();
