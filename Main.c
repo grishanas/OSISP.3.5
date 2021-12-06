@@ -8,7 +8,6 @@
 #include "stdlib.h"
 
 
-
 typedef struct MainWindow {
 	HWND HListBox;
 
@@ -191,6 +190,7 @@ LRESULT WINAPI MainWindowProcc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 		{
 		PplayGround Play = GetWindowLong(hwnd, 0);
 		PlayGroundRedraw(Play);
+
 			
 		break;
 		}
