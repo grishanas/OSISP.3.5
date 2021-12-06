@@ -1,12 +1,22 @@
 #include "PlayGround.h"
 #include <Windows.h>
 #include <windowsx.h>
+#include "Main.h"
 
 #define BLUE 1
 #define RED 2
 
+
+#define CLEANTEXT "                                           "
+#define STEPRED "Ходит красный"
+#define STEPBLUE "Ходит синий" 
+
+#define REDCOUNT "Красные точки -"
+#define	BLUECOUNT "Синие точки -"
+
 #define RIGHTCOLUMN 120
 
+#pragma warning(disable : 4996)
 
 PplayGround CreatePlayGround(HWND hwnd)
 {
@@ -185,6 +195,28 @@ int PlayGroundRedraw(PplayGround Play)
 	GetWindowRect(Play->hwndSelf, &rc);
 	rc.right -= RIGHTCOLUMN;
 	PAINTSTRUCT ps;
+	if (Play->player.color == BLUE)
+	{
+		TextOutA(Play->hdcBack, MINIMAL_WIDTH_WINDOW - 150, MINIMAL_HEIGHT_WINDOW - 70, CLEANTEXT, strlen(CLEANTEXT));
+		TextOutA(Play->hdcBack, MINIMAL_WIDTH_WINDOW - 150, MINIMAL_HEIGHT_WINDOW - 70, STEPBLUE, strlen(STEPBLUE));
+	}
+	if (Play->player.color == RED)
+	{
+		TextOutA(Play->hdcBack, MINIMAL_WIDTH_WINDOW - 150, MINIMAL_HEIGHT_WINDOW - 70, STEPRED, strlen(STEPRED));
+	}
+	if (Play->player.color)
+	{
+
+		char text1[3] = { '\0' };
+		itoa(Play->CountRed, text1, 10);
+		TextOutA(Play->hdcBack, MINIMAL_WIDTH_WINDOW - 160, MINIMAL_HEIGHT_WINDOW - 100, REDCOUNT, strlen(REDCOUNT));
+		TextOutA(Play->hdcBack, MINIMAL_WIDTH_WINDOW - 40, MINIMAL_HEIGHT_WINDOW - 100, text1, 3);
+		char text2[3] = { '\0' };
+		itoa(Play->CountBlue, text2, 10);
+		TextOutA(Play->hdcBack, MINIMAL_WIDTH_WINDOW - 160, MINIMAL_HEIGHT_WINDOW - 120, BLUECOUNT, strlen(BLUECOUNT));
+		TextOutA(Play->hdcBack, MINIMAL_WIDTH_WINDOW - 40, MINIMAL_HEIGHT_WINDOW - 120, text2, 3);
+	}
+
 	HDC windowhdc = BeginPaint(Play->hwndSelf,&ps);
 	BitBlt(windowhdc, rc.left, rc.top, rc.right, rc.bottom, Play->hdcBack, 0, 0, SRCCOPY);
 	EndPaint(Play->hwndSelf, &ps);
