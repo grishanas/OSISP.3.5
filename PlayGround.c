@@ -728,6 +728,35 @@ void PlayGroundIsPoligonExist(PplayGround Play)
 
 }
 
+int PlayGroundAddPointInt(PplayGround Play, int Point)
+{
+	int i = Point >> 16;
+	int j = Point & (MAXINT>>16);
+
+	Play->YouStep = Play->YouStep ^ 1;
+	if (Play->player.color == RED)
+	{
+		Play->PointArr[i * Play->HeightPoint + j].color = RED;
+		Play->player.color = BLUE;
+	}
+	else
+		if (Play->player.color == BLUE)
+		{
+			Play->PointArr[i * Play->HeightPoint + j].color = BLUE;
+			Play->player.color = RED;
+		}
+		else
+		{
+			Play->PointArr[i * Play->HeightPoint + j].color = RED;
+			Play->player.color = BLUE;
+		}
+	PlayGroundTryBrush(Play, i, j);
+	PlayGroundCalculatePoint(Play);
+	PlayGroundIsPoligonExist(Play);
+	PlayGroundBackDraw(Play);
+
+}
+
 int PlayGroundAddPoint(PplayGround Play, LPARAM lParam) 
 {
 	// получение координат
@@ -752,6 +781,7 @@ int PlayGroundAddPoint(PplayGround Play, LPARAM lParam)
 	if (!(Play->PointArr[i * Play->HeightPoint + j].brush == 0))
 		return;
 
+	Play->YouStep = Play->YouStep ^ 1;
 	if (Play->player.color == RED)
 	{
 		Play->PointArr[i * Play->HeightPoint + j].color = RED;
@@ -769,9 +799,11 @@ int PlayGroundAddPoint(PplayGround Play, LPARAM lParam)
 			Play->player.color = BLUE;
 		}
 
-
+	int res = 0;
 	PlayGroundTryBrush(Play, i, j);
 	PlayGroundCalculatePoint(Play);
 	PlayGroundIsPoligonExist(Play);
 	PlayGroundBackDraw(Play);
+	res = (i << 16 ) + j;
+	return res;
 }

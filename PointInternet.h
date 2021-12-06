@@ -15,7 +15,6 @@
 #define UDPListener_PORT 4343
 #define UDPSender_PORT 4344
 #define TCP_PORT 4345
-#define TCPListenPort 4346
 
 typedef struct _spis{
 	struct _spis* NextElement;
@@ -29,13 +28,18 @@ typedef struct _PointInternet
 	PTCPList TCPList;
 	HANDLE ParentThread;
 	HANDLE UDPListenerThread;
+	HANDLE TCPListenerThread;
 	HANDLE Thread;
 	HANDLE heap;
 	SOCKET UDPListenerSocket;
+	SOCKET TCPListenSocket;
 	HWND hwnd;
 	PQueue Queue;
 	char* PlayerName;
+	PTCPConnect ChooseUser;
 
 }*PPointInternet, PointInternet;
 
-PPointInternet CreateInternetConnection(HWND hwnd);
+PPointInternet CreateInternetConnection(HWND hwnd, wchar_t* Name);
+DWORD WINAPI UDPSendName(PPointInternet Internet);
+DWORD WINAPI InternetSendMessage(PTCPConnect TCPConnection, char* DGram, int size);

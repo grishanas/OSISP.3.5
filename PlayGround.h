@@ -42,10 +42,13 @@ typedef struct _playGround {
 
 	HDC hdcBack;
 	HBITMAP hbmBack;
+
+	char YouStep;
 } *PplayGround;
 
 PplayGround CreatePlayGround(HWND hwnd);
 int PlayGroundAddPoint(PplayGround Play, LPARAM lParam);
+int PlayGroundAddPointInt(PplayGround Play, int Point);
 int PlayGroundRedraw(PplayGround Play);
 int PlayGroundResize(PplayGround Play);
 

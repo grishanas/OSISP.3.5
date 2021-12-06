@@ -154,6 +154,7 @@
     <ClCompile Include="TCPIPList.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Main.h" />
     <ClInclude Include="PlayGround.h" />
     <ClInclude Include="PointInternet.h" />
     <ClInclude Include="Queue.h" />
