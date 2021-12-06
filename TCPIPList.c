@@ -64,6 +64,14 @@ PTCPConnect RemoveIP(PTCPList Connect, PTCPConnect ConnectSock)
 		__try {
 			PTCPConnect temp = Connect->LIST,tmp=temp;
 			
+			if (temp->TCPThread == ConnectSock->TCPThread)
+			{
+				temp = NULL;
+				__leave;
+			}
+			
+
+
 			while (temp->TCPThread != ConnectSock->TCPThread)
 			{
 				tmp = temp;
