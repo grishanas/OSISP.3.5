@@ -125,12 +125,13 @@ DWORD WINAPI TCPConnection(PTCPConnect Connect)
 			PPointInternet Internet = Connect->Internet;
 			RemoveIP(Internet->TCPList, Connect);
 			
-			SendMessage(Internet->hwnd, MESSAGE_UPDATELIST, Internet->TCPList, 0);
+			
 			closesocket(Connect->TCPSocket);
 			HeapFree(Internet->heap, 0, Connect->MyName);
 			HeapFree(Internet->heap, 0, Connect->PlayerName);
 			HeapFree(Internet->heap, 0, Connect->TCPSockAdrr);
 			HeapFree(Internet->heap, 0, Connect);
+			SendMessage(Internet->hwnd, MESSAGE_UPDATELIST, Internet->TCPList, 0);
 			return;
 		}
 		switch (buffer[0])
@@ -181,6 +182,11 @@ DWORD WINAPI TCPConnection(PTCPConnect Connect)
 			Point += buffer[4];
 			PPointInternet Internet = Connect->Internet;
 			SendMessage(Internet->hwnd, MESSAGE_CONNECTION_ADDPOINT, Point, 0);
+			break;
+		}
+		// окончание игры
+		case 4: 
+		{
 			break;
 		}
 		default:
