@@ -14,9 +14,29 @@
 #define REDCOUNT "Красные точки -"
 #define	BLUECOUNT "Синие точки -"
 
-#define RIGHTCOLUMN 120
+#define RIGHTCOLUMN RIGHT_PLACE
 
 #pragma warning(disable : 4996)
+
+
+int PlayGroundClean(PplayGround Play)
+{
+	Play->CountBlue = 0;
+	Play->CountRed = 0;
+	Play->EndGame = 0;
+	for (int i = 0; i < Play->WidthPoint; i++)
+	{
+		for (int j = 0; j < Play->HeightPoint; j++)
+		{
+			Play->PointArr[i * Play->HeightPoint + j].brush = 0;
+			Play->PointArr[i * Play->HeightPoint + j].color = 0;
+			Play->PointArr[i * Play->HeightPoint + j].view = 0;
+
+		}
+	}
+	Play->YouStep = 0;
+	PlayGroundBackDraw(Play);
+}
 
 PplayGround CreatePlayGround(HWND hwnd)
 {
@@ -195,30 +215,34 @@ int PlayGroundRedraw(PplayGround Play)
 	GetWindowRect(Play->hwndSelf, &rc);
 	rc.right -= RIGHTCOLUMN;
 	PAINTSTRUCT ps;
+
+
+	HDC windowhdc = BeginPaint(Play->hwndSelf,&ps);
+	BitBlt(windowhdc, rc.left, rc.top, rc.right, rc.bottom, Play->hdcBack, 0, 0, SRCCOPY);
+
+
 	if (Play->player.color == BLUE)
 	{
-		TextOutA(Play->hdcBack, MINIMAL_WIDTH_WINDOW - 150, MINIMAL_HEIGHT_WINDOW - 70, CLEANTEXT, strlen(CLEANTEXT));
-		TextOutA(Play->hdcBack, MINIMAL_WIDTH_WINDOW - 150, MINIMAL_HEIGHT_WINDOW - 70, STEPBLUE, strlen(STEPBLUE));
+		TextOutA(windowhdc, MINIMAL_WIDTH_WINDOW - 180, MINIMAL_HEIGHT_WINDOW - 70, CLEANTEXT, strlen(CLEANTEXT));
+		TextOutA(windowhdc, MINIMAL_WIDTH_WINDOW - 180, MINIMAL_HEIGHT_WINDOW - 70, STEPBLUE, strlen(STEPBLUE));
 	}
 	if (Play->player.color == RED)
 	{
-		TextOutA(Play->hdcBack, MINIMAL_WIDTH_WINDOW - 150, MINIMAL_HEIGHT_WINDOW - 70, STEPRED, strlen(STEPRED));
+		TextOutA(windowhdc, MINIMAL_WIDTH_WINDOW - 180, MINIMAL_HEIGHT_WINDOW - 70, STEPRED, strlen(STEPRED));
 	}
 	if (Play->player.color)
 	{
 
 		char text1[3] = { '\0' };
 		itoa(Play->CountRed, text1, 10);
-		TextOutA(Play->hdcBack, MINIMAL_WIDTH_WINDOW - 160, MINIMAL_HEIGHT_WINDOW - 100, REDCOUNT, strlen(REDCOUNT));
-		TextOutA(Play->hdcBack, MINIMAL_WIDTH_WINDOW - 40, MINIMAL_HEIGHT_WINDOW - 100, text1, 3);
+		TextOutA(windowhdc, MINIMAL_WIDTH_WINDOW - 180, MINIMAL_HEIGHT_WINDOW - 100, REDCOUNT, strlen(REDCOUNT));
+		TextOutA(windowhdc, MINIMAL_WIDTH_WINDOW - 50, MINIMAL_HEIGHT_WINDOW - 100, text1, 3);
 		char text2[3] = { '\0' };
 		itoa(Play->CountBlue, text2, 10);
-		TextOutA(Play->hdcBack, MINIMAL_WIDTH_WINDOW - 160, MINIMAL_HEIGHT_WINDOW - 120, BLUECOUNT, strlen(BLUECOUNT));
-		TextOutA(Play->hdcBack, MINIMAL_WIDTH_WINDOW - 40, MINIMAL_HEIGHT_WINDOW - 120, text2, 3);
+		TextOutA(windowhdc, MINIMAL_WIDTH_WINDOW - 180, MINIMAL_HEIGHT_WINDOW - 120, BLUECOUNT, strlen(BLUECOUNT));
+		TextOutA(windowhdc, MINIMAL_WIDTH_WINDOW - 50, MINIMAL_HEIGHT_WINDOW - 120, text2, 3);
 	}
 
-	HDC windowhdc = BeginPaint(Play->hwndSelf,&ps);
-	BitBlt(windowhdc, rc.left, rc.top, rc.right, rc.bottom, Play->hdcBack, 0, 0, SRCCOPY);
 	EndPaint(Play->hwndSelf, &ps);
 }
 
@@ -789,6 +813,8 @@ int PlayGroundAddPointInt(PplayGround Play, int Point)
 
 }
 
+
+
 int PlayGroundAddPoint(PplayGround Play, LPARAM lParam) 
 {
 	// получение координат
@@ -838,4 +864,59 @@ int PlayGroundAddPoint(PplayGround Play, LPARAM lParam)
 	PlayGroundBackDraw(Play);
 	res = (i << 16 ) + j;
 	return res;
+}
+
+int PlayGroundEndGame(PplayGround Play)
+{
+	if (Play == NULL)
+		return 0;
+	if (Play->CountBlue > 25)
+	{
+		MessageBox(Play->hwndSelf, L"Выйграл синий игрок!", L" ", MB_OK);
+		Play->EndGame = 1;
+		return 1;
+	}
+
+	if (Play->CountRed > 25)
+	{
+		MessageBox(Play->hwndSelf, L"Выйграл красный игрок!", L" ", MB_OK);
+		Play->EndGame = 1;
+		return 1;
+	}
+	int i = 0;
+	int j = 0;
+	int Clear = 0;
+	while (i < Play->WidthPoint)
+	{
+		j = 0;
+		while (j < Play->HeightPoint)
+		{
+			if (Play->PointArr[i * Play->HeightPoint + j].color == 0)
+				Clear++;
+			j++;
+		}
+		i++;
+	}
+	if (!Clear)
+	{
+		if (Play->CountBlue < Play->CountRed)
+		{
+			MessageBox(Play->hwndSelf, L"Выйграл красный игрок!", L" ", MB_OK);
+			Play->EndGame = 1;
+			return 1;
+		}
+		if (Play->CountBlue > Play->CountRed)
+		{
+			MessageBox(Play->hwndSelf, L"Выйграл синий игрок!", L" ", MB_OK);
+			Play->EndGame = 1;
+			return 1;
+		}
+		if (Play->CountBlue == Play->CountRed)
+		{
+			MessageBox(Play->hwndSelf, L"Победтла Дружба!", L" ", MB_OK);
+			Play->EndGame = 1;
+			return 1;
+		}
+	}
+	return 0;
 }
