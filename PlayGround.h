@@ -51,5 +51,7 @@ int PlayGroundAddPoint(PplayGround Play, LPARAM lParam);
 int PlayGroundAddPointInt(PplayGround Play, int Point);
 int PlayGroundRedraw(PplayGround Play);
 int PlayGroundResize(PplayGround Play);
+int PlayGroundEndGame(PplayGround Play);
+int PlayGroundClean(PplayGround Play);
 
 
