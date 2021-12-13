@@ -124,8 +124,6 @@ DWORD WINAPI TCPConnection(PTCPConnect Connect)
 		{
 			PPointInternet Internet = Connect->Internet;
 			RemoveIP(Internet->TCPList, Connect);
-			
-			
 			closesocket(Connect->TCPSocket);
 			HeapFree(Internet->heap, 0, Connect->MyName);
 			HeapFree(Internet->heap, 0, Connect->PlayerName);
@@ -185,8 +183,27 @@ DWORD WINAPI TCPConnection(PTCPConnect Connect)
 			break;
 		}
 		// окончание игры
-		case 4: 
+		case '4': 
 		{
+			switch (buffer[1])
+			{
+			//
+			case '0': {
+				break;
+			}
+			// person surrendered
+			case '1': {
+				PPointInternet Internet = Connect->Internet;
+				SendMessage(Internet->hwnd, MESSAGE_CONNECTION_LEAVE, Connect, 0);
+				break;
+			}
+			// person out of the game
+			case '2': {
+
+			}
+			default:
+				break;
+			}
 			break;
 		}
 		default:
@@ -382,7 +399,6 @@ PPointInternet CreateInternetConnection(HWND hwnd,wchar_t* Name)
 	Internet->hwnd = hwnd;
 	Internet->ParentThread = GetCurrentThread();
 	Internet->TCPList = CreateList();
-	PQueue Queue = CreateQueue();
 
 	Internet->UDPListenerThread = CreateThread(NULL, 0, &UDPListenerFunction, Internet, 0, NULL);
 	Internet->TCPListenerThread = CreateThread(NULL, 0, &NormTCPListener, Internet, 0, NULL);
