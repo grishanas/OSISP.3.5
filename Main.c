@@ -181,7 +181,9 @@ LRESULT WINAPI MainWindowProcc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 			SetWindowLong(hwnd, 4, child);
 
 			InvalidateRect(hwnd, NULL, FALSE);
+
 		}
+		SetFocus(GetWindowLong(hwnd, 4));
 		//тут надо создавать еще одно окошко, со списком всех доступных игроков+ надо пораждать еще один поток для чтения потока
 		// еще надо задефайнить сообщение для отправки винде
 		break;
@@ -190,20 +192,43 @@ LRESULT WINAPI MainWindowProcc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 		{
 		PplayGround Play = GetWindowLong(hwnd, 0);
 		PlayGroundRedraw(Play);
+		int res=PlayGroundEndGame(Play);
+		if (res == 1)
+		{
+			PPointInternet Internet = GetWindowLong(hwnd, 8);
+			InternetSendMessage(Internet->ChooseUser, '3', 1);
+			Internet->ChooseUser == NULL;
 
-			
+		}
 		break;
 		}
 	case WM_COMMAND:
 		switch (wParam)
 		{
 		case MAIN_WINDOW_BUTTON_START:
-			
-			HWND ChildHandle =GetWindowLong(hwnd, 4);
+		{
+			HWND ChildHandle = GetWindowLong(hwnd, 4);
 			ShowWindow(ChildHandle, SW_SHOW);
 			int er = GetLastError();
 			UpdateWindow(ChildHandle);
+			SetFocus(ChildHandle);
 			break;
+		}
+		case MAIN_WINDOW_LEAVE_GAME: {
+
+			HWND ChildHandle = GetWindowLong(hwnd, 4);
+			EnableWindow(hwnd, TRUE);
+			EnableWindow(ChildHandle, TRUE);
+			ShowWindow(ChildHandle, SW_SHOW);
+			UpdateWindow(ChildHandle);
+			PlayGroundClean(GetWindowLong(hwnd, 0));
+			PPointInternet Internet = GetWindowLong(hwnd, 8);
+			if ((Internet != NULL) && (Internet->ChooseUser != NULL))
+			{
+				InternetSendMessage(Internet->ChooseUser, "41", 2);
+			}
+			break;
+		}
 		}
 		break;
 	
@@ -212,6 +237,8 @@ LRESULT WINAPI MainWindowProcc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 	//
 	case(WM_LBUTTONDOWN): 
 		{
+		
+		InvalidateRect(hwnd, NULL, FALSE);
 		PPointInternet Internet = GetWindowLong(hwnd, 8);
 		if (Internet == NULL)
 			break;
@@ -241,12 +268,25 @@ LRESULT WINAPI MainWindowProcc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 		}
 	case(WM_SIZING): 
 	{
-		PplayGround Play = GetWindowLong(hwnd, 0);
+		/*PplayGround Play = GetWindowLong(hwnd, 0);
 		PlayGroundResize(Play);
-		InvalidateRect(hwnd, NULL, FALSE);
+		InvalidateRect(hwnd, NULL, FALSE);*/
+		break;
+	}
+
+	case WM_GETMINMAXINFO:
+	{
+		LPMINMAXINFO lpMMI = (LPMINMAXINFO)lParam;
+		lpMMI->ptMinTrackSize.x = MINIMAL_WIDTH_WINDOW;
+		lpMMI->ptMinTrackSize.y = MINIMAL_HEIGHT_WINDOW;
+
+		lpMMI->ptMaxTrackSize.x = MINIMAL_WIDTH_WINDOW;
+		lpMMI->ptMaxTrackSize.y = MINIMAL_HEIGHT_WINDOW;
+
 		break;
 	}
 	case WM_SETFOCUS: {
+		
 		break;
 	}
 	case(WM_DESTROY): 
@@ -326,7 +366,6 @@ LRESULT WINAPI MainWindowProcc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 		EnableWindow(GetWindowLong(hwnd, 4), TRUE);
 		SendMessageW(GetWindowLong(hwnd, 4), WM_CLOSE, 0, 0);
 
-
 		break;
 	}
 	// Закрытие соединение с пользователем
@@ -338,6 +377,12 @@ LRESULT WINAPI MainWindowProcc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 		Internet->ChooseUser = NULL;
 		EnableWindow(hwnd, TRUE);
 		EnableWindow(GetWindowLong(hwnd, 4), TRUE);
+		break;
+	}
+
+	case MESSAGE_CONNECTION_END: {
+		PPointInternet Internet = GetWindowLong(hwnd, 8);
+		Internet->ChooseUser = NULL;
 		break;
 	}
 
@@ -354,7 +399,7 @@ LRESULT WINAPI MainWindowProcc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 		EnableWindow(hwnd, FALSE);
 		EnableWindow(GetWindowLong(hwnd, 4), FALSE);
 
-		int res = MessageBox(hwnd, Connection->PlayerName, L"Принять приглошение?", MB_YESNO | MB_ICONINFORMATION);
+		int res = MessageBox(hwnd, Connection->PlayerName, L"Принять приглашение?", MB_YESNO | MB_ICONINFORMATION);
 		if (res == IDYES)
 		{
 			PplayGround Play = GetWindowLong(hwnd, 0);
@@ -375,6 +420,7 @@ LRESULT WINAPI MainWindowProcc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 	{
 		PPointInternet Internet = GetWindowLong(hwnd, 8);
 		PTCPConnect Connection = (PTCPConnect)wParam;
+		if (Internet->ChooseUser!=NULL)
 		if (Internet->ChooseUser->TCPThread == Connection->TCPThread)
 		{
 			Internet->ChooseUser = NULL;
@@ -384,8 +430,15 @@ LRESULT WINAPI MainWindowProcc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
 
 		break;
 	}
+	case MESSAGE_CONNECTION_LEAVE: {
+		MessageBox(hwnd, L"Пользователь покинул игру", L"Ответ пользователя", MB_OK | MB_ICONINFORMATION);
+		PPointInternet Internet = GetWindowLong(hwnd, 8);
+		Internet->ChooseUser = NULL;
+		PplayGround Play= GetWindowLong(hwnd, 0);
+		PlayGroundClean(Play);
+		InvalidateRect(hwnd, NULL, FALSE);
 	}
-
+	}
 	return DefWindowProc(hwnd,msg,wParam, lParam);
 }
 
@@ -411,13 +464,15 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR lpCmdLine,
 
 	Mainhwnd = CreateWindowEx(0, WindowsClass, L"Игра точки", (WS_OVERLAPPEDWINDOW | WS_VISIBLE), 0, 0, MINIMAL_WIDTH_WINDOW, MINIMAL_HEIGHT_WINDOW, 0, 0, hInstance, NULL);
 
-	HWND HBStart = CreateWindowEx(0, L"BUTTON", L"Список игроков", (WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON), MINIMAL_WIDTH_WINDOW - 140, 0, 120, 30, Mainhwnd, (HMENU)MAIN_WINDOW_BUTTON_START, 0, NULL);
+	HWND HBStart = CreateWindowEx(0, L"BUTTON", L"Список игроков", (WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON), MINIMAL_WIDTH_WINDOW - RIGHT_PLACE, 0, 120, 30, Mainhwnd, (HMENU)MAIN_WINDOW_BUTTON_START, 0, NULL);
+	HWND HBLeaveGame = CreateWindowEx(0, L"BUTTON", L"Покинуть игру", (WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON), MINIMAL_WIDTH_WINDOW - RIGHT_PLACE, 40, 120, 30, Mainhwnd, (HMENU)MAIN_WINDOW_LEAVE_GAME, 0, NULL);
 	while (GetMessage(&msg, 0, 0, 0))
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
 
+	// Here need to send a disconnect message to all connected users
 	return msg.wParam;
 
 }
