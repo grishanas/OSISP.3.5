@@ -59,14 +59,16 @@ int AddNewIP(PTCPList Connect, PTCPConnect ConnectSock)
 PTCPConnect RemoveIP(PTCPList Connect, PTCPConnect ConnectSock)
 {
 	int res = 0;
+	int i = -1;
 	WaitForSingleObject(Connect->MUTEX, INFINITE);
 	{
 		__try {
+			
 			PTCPConnect temp = Connect->LIST,tmp=temp;
 			
 			if (temp->TCPThread == ConnectSock->TCPThread)
 			{
-				temp = NULL;
+				i++;
 				__leave;
 			}
 			
@@ -76,10 +78,24 @@ PTCPConnect RemoveIP(PTCPList Connect, PTCPConnect ConnectSock)
 			{
 				tmp = temp;
 				temp = temp->NextIP;
+				i++;
 			}
 			tmp->NextIP = temp->NextIP;
 		}
 		__finally {
+
+			if (i == 0)
+				Connect->LIST = NULL;
+			else
+			{
+				PTCPConnect temp = Connect->LIST;
+				for (int j = -1; j < i; j++)
+				{
+					Connect->LIST = Connect->LIST->NextIP;
+				}
+				Connect->LIST = NULL;
+				Connect->LIST = temp;
+			}
 			ReleaseMutex(Connect->MUTEX);
 		}
 	}
@@ -104,14 +120,12 @@ PTCPList GetUsers(PTCPList Source) {
 	WaitForSingleObject(Source->MUTEX, INFINITE);
 	{
 		__try {
+
 			PTCPConnect temp = Source->LIST;
-			if ((temp->NextIP == NULL) && (temp != NULL))
-			{
-				*tempList = *temp;
+			if (temp == NULL)
 				__leave;
-			}
-			if(temp != NULL)
-				*tempList = *temp;
+
+			*tempList = *temp;
 
 			while (temp->NextIP != NULL)
 			{
@@ -146,6 +160,8 @@ int RemoveUsers(PTCPList List) {
 PTCPConnect GetUserOFIndex(PTCPList List,int index)
 {
 	PTCPConnect tmp = List->LIST;
+	if (tmp->TCPThread == 0)
+		return NULL;
 	for (int i = 0; i < index; i++)
 	{
 		tmp = tmp->NextIP;
