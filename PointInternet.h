@@ -4,7 +4,6 @@
 #endif
 #pragma comment(lib,"Ws2_32.lib")
 
-#include "Queue.h"
 #include <Windows.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -34,7 +33,6 @@ typedef struct _PointInternet
 	SOCKET UDPListenerSocket;
 	SOCKET TCPListenSocket;
 	HWND hwnd;
-	PQueue Queue;
 	char* PlayerName;
 	PTCPConnect ChooseUser;
 
