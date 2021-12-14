@@ -135,7 +135,7 @@ DWORD WINAPI TCPConnection(PTCPConnect Connect)
 		switch (buffer[0])
 		{
 			// прием имени пользователя
-		case(1):
+		case(1):	
 		{
 			PPointInternet Internet = Connect->Internet;
 			Connect->PlayerName = HeapAlloc(Internet->heap, HEAP_ZERO_MEMORY, sizeof(wchar_t) * MaxNameSize);
