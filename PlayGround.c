@@ -742,12 +742,6 @@ int PlayGroundTryBrush(PplayGround Play, int i, int j)
 }
 
 
-// что здесь вообще происходит?
-// бля мб здесь удаление несуществующих полигонов?
-// бля кто писал это дерьмо
-// после тестов- этот код вообще нихуя не делает)
-// а нет, парень был красава, но вот с утечками не справился
-
 /// <summary>
 /// this function search exist loop. if loop under other loop-> first loop delete 
 /// </summary>
